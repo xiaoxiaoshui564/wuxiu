@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>群聊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        neutral: '#64748B',
+                        light: '#F1F5F9',
+                        dark: '#1E293B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .message-appear {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            .scrollbar-hide {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .header-gradient {
+                background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            }
+            .pulse-dot {
+                animation: pulse 2s infinite;
+            }
+            .system-message {
+                animation: fadeIn 0.5s ease-out, pulse 2s infinite 1s;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(79, 70, 229, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-dark">
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden h-screen flex flex-col">
+        <!-- 聊天室头部 -->
+        <header class="header-gradient text-white p-4 shadow-lg relative overflow-hidden">
+            <!-- 装饰元素 -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+            
+            <div class="flex items-center justify-between relative z-10">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                        <i class="fa fa-comments text-xl"></i>
+                    </div>
+                    <h1 class="text-xl font-bold tracking-wide">群聊</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm text-sm">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-2 pulse-dot"></span>
+                        在线
+                    </div>
+                    <div class="bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm text-sm">
+                        5人
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- 聊天成员列表 -->
+        <div class="bg-light px-4 py-2 text-sm border-b flex items-center overflow-x-auto scrollbar-hide">
+            <div class="flex -space-x-2">
+                <img src="https://picsum.photos/id/1005/40/40" alt="我的头像" class="w-8 h-8 rounded-full border-2 border-white" title="我">
+                <img src="https://picsum.photos/id/91/40/40" alt="快乐小熊猫的头像" class="w-8 h-8 rounded-full border-2 border-white" title="快乐小熊猫">
+                <img src="https://picsum.photos/id/22/40/40" alt="自由的作家的头像" class="w-8 h-8 rounded-full border-2 border-white" title="自由的作家">
+                <img src="https://picsum.photos/id/65/40/40" alt="逐梦的飞鸟的头像" class="w-8 h-8 rounded-full border-2 border-white" title="逐梦的飞鸟">
+                <img src="https://picsum.photos/id/62/40/40" alt="星辰快乐的头像" class="w-8 h-8 rounded-full border-2 border-white" title="星辰快乐">
+            </div>
+        </div>
+        
+        <!-- 聊天消息区域 -->
+        <main id="chat-messages" class="flex-1 p-4 overflow-y-auto scrollbar-hide space-y-4">
+            <!-- 初始日期显示 -->
+        </main>
+        
+        <!-- 输入区域 -->
+        <footer class="p-4 border-t bg-white">
+            <form id="message-form" class="flex space-x-2">
+                <input 
+                    type="text" 
+                    id="message-input" 
+                    placeholder="输入消息..." 
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                    autocomplete="off"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-primary hover:bg-primary/90 text-white p-2 rounded-full w-12 h-12 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+                >
+                    <i class="fa fa-paper-plane"></i>
+                </button>
+            </form>
+        </footer>
+    </div>
+
+    <script>
+        // 定义用户数据 - 前两人支持双休，后两人反对双休
+        const users = [
+            { id: 1, name: '快乐小熊猫', avatar: 'https://picsum.photos/id/91/40/40', stance: 'support' },
+            { id: 2, name: '自由的作家', avatar: 'https://picsum.photos/id/22/40/40', stance: 'support' },
+            { id: 3, name: '逐梦的飞鸟', avatar: 'https://picsum.photos/id/65/40/40', stance: 'oppose' },
+            { id: 4, name: '星辰快乐', avatar: 'https://picsum.photos/id/62/40/40', stance: 'oppose' }
+        ];
+        
+        // 支持双休的消息
+        const supportMessages = [
+            "终于有时间好好睡个懒觉了！高中生压力太大了，双休能让他们喘口气，多点时间运动运动，身体好了，学习效率自然就高了！",
+            "支持双休！现在的孩子学习压力太大，周末还被各种补课填满，连和家人朋友聚聚的时间都没有。双休能让他们有时间发展兴趣爱好，也更有利于心理健康。",
+            "从学生时代就培养起来的牛马意识，漫无目的毫无意义的卷生卷死，结果学生除了收获满身疲惫一无所有",
+            "我家孩子一直盼着双休。他平时学习很努力，周末也想放松一下。双休能让他们有时间调整状态，下周学习更有精神。",
+            "双休能减少孩子的“假期滑坡效应”！平时学习太紧张，周末也能适当放松，还能安排一些兴趣班，一举多得！",
+            "支持双休！现在的孩子眼睛都快看坏了，周末多点时间户外活动，对眼睛也好。学习不只是死读书，身体素质也很重要！",
+            "看电影的时候，前排的人站起来了，后排的人就不得不站起来。我们要提倡所有人都不要站起来，而不是建议所有人都站起来。这就是我们防止内卷的意义。",
+            "双休是好事！家长也可以利用周末时间陪孩子，一起做家务、运动，增进亲子关系。孩子心情好了，学习也更有动力。"
+        ];
+        
+        // 反对双休的消息
+        const opposeMessages = [
+            "我们这里留守孩子多，双休之后，周一周二上课趴倒一大片，周末都熬夜通宵玩手机去了，家长也没办法，管不到。",
+            "有人说双休就得去培训班 可我咋觉得培训班都是千位数起点 不是谁都能承受吧 我家就够呛",
+            "不同意双休，或者换种形式，放假可以，在学校内部，学生可以做些运动，收拾一下个人内务，班级组织看个电影啥的。",
+            "跪求不要盯着初高中的周末了 家长保证不了双休 他们休周末还不如待在学校里放心 再就是贫困地区不在校内搞题海战术的话 就只能出来到各种培训班里遨游了 真的是又费心又费力",
+            "高考竞争这么激烈，周末休息两天，孩子学习时间肯定不够用。基础不好的孩子更需要利用周末补课。",
+            "主要是不能严格的全面的落实，只要有一个学校补课，对其他学校就形成了不公平，于是大家都开始补，好像叫剧场效应吧。最后大家都补等于都不补",
+            "单休是高中面临的压力所决定的，由行政出面一刀切改成双休我认为就是添乱。压力还是在那里，硬生生改为双休，这是压力又给到家长了",
+            "双休听起来好，但实际操作难！家长工作忙，哪有时间监督孩子学习？孩子在家没人管，成绩肯定下滑。"
+        ];
+        
+        // 为每个用户分配4条消息
+        const userMessages = {
+            1: supportMessages.slice(0, 4),  // 快乐小熊猫 - 支持双休（前4条）
+            2: supportMessages.slice(4, 8),  // 自由的作家 - 支持双休（后4条）
+            3: opposeMessages.slice(0, 4),   // 逐梦的飞鸟 - 反对双休（前4条）
+            4: opposeMessages.slice(4, 8)    // 星辰快乐 - 反对双休（后4条）
+        };
+        
+        // 跟踪每个用户剩余的消息
+        const remainingUserMessages = { ...userMessages };
+        
+        // 收集所有用户ID，用于随机选择发送者
+        const allUserIds = users.map(user => user.id);
+        
+        // DOM 元素
+        const chatMessages = document.getElementById('chat-messages');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        
+        // 初始化 - 添加日期
+        function initializeChat() {
+            const now = new Date();
+            const options = { month: 'short', day: 'numeric', weekday: 'short' };
+            const formattedDate = now.toLocaleDateString('zh-CN', options);
+            
+            const dateDiv = document.createElement('div');
+            dateDiv.className = 'text-center message-appear';
+            dateDiv.innerHTML = `
+                <span class="inline-block bg-gray-200 text-neutral text-xs px-3 py-1 rounded-full">${formattedDate}</span>
+            `;
+            chatMessages.appendChild(dateDiv);
+        }
+        
+        // 获取当前时间
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+        
+        // 添加消息到聊天区域
+        function addMessage(sender, text, isUser = false, isSystem = false) {
+            const time = getCurrentTime();
+            const messageDiv = document.createElement('div');
+            
+            if (isSystem) {
+                messageDiv.className = 'text-center system-message';
+                messageDiv.innerHTML = `
+                    <span class="inline-block bg-primary/10 text-primary text-sm px-4 py-2 rounded-full border border-primary/20">
+                        ${text}
+                    </span>
+                `;
+            } else if (isUser) {
+                messageDiv.className = 'flex justify-end message-appear';
+                messageDiv.innerHTML = `
+                    <div class="max-w-[70%]">
+                        <div class="flex justify-end items-center mb-1">
+                            <span class="text-xs text-neutral mr-2">${time}</span>
+                            <span class="text-xs font-medium">我</span>
+                        </div>
+                        <div class="bg-primary text-white p-3 rounded-2xl rounded-tr-none shadow-sm">
+                            ${text}
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.className = 'flex justify-start message-appear';
+                messageDiv.innerHTML = `
+                    <img src="${sender.avatar}" alt="${sender.name}的头像" class="w-8 h-8 rounded-full mr-2 mt-1 flex-shrink-0">
+                    <div class="max-w-[70%]">
+                        <div class="flex items-center mb-1">
+                            <span class="text-xs font-medium mr-2">${sender.name}</span>
+                            <span class="text-xs text-neutral">${time}</span>
+                        </div>
+                        <div class="bg-light p-3 rounded-2xl rounded-tl-none shadow-sm">
+                            ${text}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // 获取还有消息未发送的用户ID
+        function getActiveUsers() {
+            return allUserIds.filter(userId => remainingUserMessages[userId].length > 0);
+        }
+        
+        // 发送下一条消息
+        function sendNextMessage() {
+            // 获取还有消息要发送的用户
+            const activeUsers = getActiveUsers();
+            
+            // 如果没有活跃用户了，显示结束提示并结束发送
+            if (activeUsers.length === 0) {
+                // 显示系统提示
+                addMessage(null, '聊天已结束，各位可返回问卷继续做答', false, true);
+                return;
+            }
+            
+            // 随机选择一个活跃用户
+            const randomUserId = activeUsers[Math.floor(Math.random() * activeUsers.length)];
+            const sender = users.find(user => user.id === randomUserId);
+            
+            // 获取该用户的下一条消息
+            const nextMessage = remainingUserMessages[randomUserId].shift();
+            
+            // 发送消息
+            addMessage(sender, nextMessage);
+            
+            // 随机生成10-15秒之间的延迟（10000-15000毫秒）
+            const nextDelay = 10000 + Math.random() * 5000;
+            
+            // 安排下一条消息
+            setTimeout(sendNextMessage, nextDelay);
+        }
+        
+        // 表单提交处理
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageText = messageInput.value.trim();
+            
+            if (messageText) {
+                addMessage(null, messageText, true);
+                messageInput.value = '';
+            }
+        });
+        
+        // 允许按Enter发送消息
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                messageForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // 初始化聊天并开始发送消息
+        initializeChat();
+        setTimeout(sendNextMessage, 1000);
+    </script>
+</body>
+</html>
+    
